@@ -15,7 +15,7 @@ A conversational research agent that gathers news from multiple sources (AI worl
 ## Docs
 
 - [`docs/PLAN.md`](docs/PLAN.md) — roadmap: what to do next
-- [`docs/LEARNING.md`](docs/LEARNING.md) — concepts learned (interview study sheet)
+- [`docs/LEARNING.md`](docs/LEARNING.md) — concepts learned
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — why choices were made
 
 ## Status

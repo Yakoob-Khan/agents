@@ -1,6 +1,6 @@
 # LEARNING — concepts I understand
 
-> What I've learned, in my own words. Append-mostly. This is my interview study sheet.
+> What I've learned, in my own words. Append-mostly. My personal knowledge base for this project.
 > Prompt Claude "add what I learned to LEARNING.md" after digesting each concept.
 > Companion: [`PLAN.md`](PLAN.md) (what to do) · [`DECISIONS.md`](DECISIONS.md) (why)
 
@@ -32,7 +32,7 @@
 > _(fill in)_
 
 ## Evals
-> _(fill in — the differentiator)_
+> _(fill in)_
 
 ---
 

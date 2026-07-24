@@ -37,7 +37,7 @@ One concept per level. Build on the raw `@anthropic-ai/sdk`. Don't build ahead o
 | [ ] | **4** | Multiple sources + routing/parallel fetch | Workflow patterns (routing, parallelization) |
 | [ ] | **5** | Orchestrator + subagents per source | Multi-agent, context isolation |
 | [ ] | **6** | Model switching (cheap filter → strong synthesis) | Model routing & cost |
-| [ ] | **7** | Eval set + regression harness | **Evals** ← interview differentiator |
+| [ ] | **7** | Eval set + regression harness | **Evals** ← measure quality, not vibes |
 | [ ] | **8** | Daily scheduled brief + observability | Productionization, MCP servers |
 
 ---

@@ -9,7 +9,7 @@
 
 - **Context:** Need to pick how much abstraction to build on for the agent loop, tool dispatch, and context management.
 - **Decision:** Build on the raw `@anthropic-ai/sdk`. Defer frameworks until Level 5+, and adopt one then only as a deliberate comparison.
-- **Why:** This is a learning project. Frameworks hide the exact mechanics (the loop, tool-call dispatch, context assembly) that are the point of learning and the thing to explain in interviews.
+- **Why:** This is a learning project. Frameworks hide the exact mechanics (the loop, tool-call dispatch, context assembly) that are the point of learning.
 - **Revisit when:** At Level 5+, or if boilerplate is clearly obscuring the concept rather than teaching it.
 
 ---

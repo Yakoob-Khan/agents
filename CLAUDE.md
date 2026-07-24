@@ -2,7 +2,7 @@
 
 ## What this is
 
-**Briefing** is a conversational news-research agent, built as a *learning project*. The point is not just to ship an agent — it's to implement agentic concepts from scratch, in increasing sophistication, to build deep understanding (and interview-ready knowledge).
+**Briefing** is a conversational news-research agent, built as a *learning project*. The point is not just to ship an agent — it's to implement agentic concepts from scratch, in increasing sophistication, to build deep understanding.
 
 ## How to work in this repo
 
