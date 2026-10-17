@@ -1,6 +1,6 @@
 # MNN — <name>: design
 
-> Copy to `docs/design/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`). Rough is fine. Status: draft | in debate | approved
+> Copy to `docs/designs/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`). Rough is fine. Status: draft | in debate | approved
 
 ## Goal
 What does this build, in one or two sentences? What concept is it for?

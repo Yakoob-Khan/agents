@@ -12,7 +12,7 @@ The principle: **build first, read second.** Concepts stick when they're attache
 Ask Claude: *"Kick off M05"* (or *"lab 01"*). One paragraph back: what I'm building, what concept to watch for. No reading list yet.
 
 ### 2. Design (me, 20–40 min)
-Copy [`templates/DESIGN.md`](templates/DESIGN.md) to `docs/design/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`) and fill it in. Rough is fine — gaps are what the debate is for. Write down my *guesses* about how things work; being wrong here is where the learning comes from.
+Copy [`designs/DESIGN.md`](designs/DESIGN.md) to `docs/designs/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`) and fill it in. Rough is fine — gaps are what the debate is for. Write down my *guesses* about how things work; being wrong here is where the learning comes from.
 
 ### 3. Debate (with Claude)
 Prompt: *"Review my design. Challenge it: alternatives, tradeoffs, how real agent platforms do it."*

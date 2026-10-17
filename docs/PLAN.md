@@ -9,7 +9,7 @@
 
 ## Current step
 
-👉 **Lab 01 — kickoff.** Prompt: *"Kick off lab 01."* Then copy `docs/templates/DESIGN.md` to `labs/01-messages/DESIGN.md` and draft it.
+👉 **Lab 01 — kickoff.** Prompt: *"Kick off lab 01."* Then copy `docs/designs/DESIGN.md` to `labs/01-messages/DESIGN.md` and draft it.
 
 Decide in the lab 01 design (they carry forward): Python version, package manager (e.g. `uv`), linter/formatter (e.g. `ruff`), type checker (`mypy` or `pyright`, strict), test runner (`pytest`), how the API key is supplied.
 

@@ -59,8 +59,9 @@ agents/
     ├── WORKFLOW.md        # the per-milestone loop
     ├── LEARNING.md        # concepts in my own words
     ├── DECISIONS.md       # tradeoffs (why X over Y)
-    ├── design/            # one design doc per milestone
-    └── templates/DESIGN.md
+    └── designs/
+        ├── DESIGN.md      # template: copy for each milestone
+        └── MNN-name.md    # one design doc per milestone
 ```
 
 ## Stack

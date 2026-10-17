@@ -12,7 +12,7 @@ The user builds first and reads later. Don't front-load documentation; point to 
 
 Follow the loop in `docs/WORKFLOW.md`. In short:
 
-1. **Design is the user's.** The user drafts `docs/design/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`). Don't write the design for them; ask questions, offer options.
+1. **Design is the user's.** The user drafts `docs/designs/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`). Don't write the design for them; ask questions, offer options.
 2. **Debate before code.** Challenge the design: alternatives, tradeoffs, where it diverges from current best practice or from how production agent platforms do it. Give a recommendation, not a survey. Record settled cross-cutting tradeoffs in `docs/DECISIONS.md`.
 3. **No implementation until the user approves the design.** Then implement in small, reviewable steps — one concept per step. Through Phase 2, stop after each step for review. From M4 on, run the eval suite at the end of each milestone.
 4. **Teach while building.** Explain the *why* of each step. After a step, point to the specific lines that carry the concept.
@@ -60,7 +60,7 @@ When something in these docs has gone stale, say so and propose the fix.
 - `docs/WORKFLOW.md` — the per-milestone loop and review levels.
 - `docs/LEARNING.md` — concepts in the user's words (nouns: what is *true*). Append-mostly. When asked to "add what I learned," write here in the user's voice, from what they said; don't paste docs.
 - `docs/DECISIONS.md` — tradeoff record (why X over Y). Format: context → decision → why → revisit-when.
-- `docs/design/MNN-name.md` — the user's milestone designs (template: `docs/templates/DESIGN.md`).
+- `docs/designs/MNN-name.md` — the user's milestone designs (template: `docs/designs/DESIGN.md`).
 - `docs/roadmap.html` — visual roadmap. **Keep it in sync:** when a milestone is ticked in `PLAN.md`, add its code to the `DONE` list at the top of the page's script and set `UPDATED` to today's date. When milestones are added, renamed, or reordered in `PLAN.md`, update the `PHASES` data (and the system map) to match.
 
 ## Stack preferences
