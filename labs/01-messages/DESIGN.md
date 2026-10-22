@@ -93,3 +93,5 @@ user (prompt as CLI argument) → script → Claude API → response → script 
 
 ## Retro
 After building: what surprised me, what I'd change.
+
+- **What was new to me:** "I didn't know about the Messages API, the idea of structured output, Pydantic model"

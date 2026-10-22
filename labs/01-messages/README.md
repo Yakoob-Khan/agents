@@ -36,4 +36,4 @@ uv run pytest -q
 
 ## Retro
 
-_After building: what surprised me, what I'd change._
+See the Retro section in [`DESIGN.md`](DESIGN.md).
