@@ -296,6 +296,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "anthropic" },
+    { name = "pydantic" },
 ]
 
 [package.dev-dependencies]
@@ -306,7 +307,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "anthropic" }]
+requires-dist = [
+    { name = "anthropic" },
+    { name = "pydantic", specifier = ">=2.14.1" },
+]
 
 [package.metadata.requires-dev]
 dev = [

@@ -66,6 +66,23 @@ user (prompt as CLI argument) → script → Claude API → response → script 
 ### Refinement (after building)
 - Show the model's thinking instead of only "Thinking...": request `display: "summarized"` and stream the thinking summary (faint text) before the answer. "Thinking..." stays until the first thinking or answer text arrives.
 
+## Step 3 — Structured JSON output
+
+**Problem:** the answer is free-form markdown, written for a person. Programs need answers with known fields they can read, store, or pass on. Make the model return its answer as JSON matching a shape I define.
+
+### Design
+1. **The shape (first idea):** "I want fields of "prompt", "output" (containing the answer text), both string type, the response metadata: (json type). I'm sure more standard JSON schema is available for a standard conversational agent, but I'm not sure what the standard is. This is just my guess."
+   - **Model schema (final):** "Have the structured response schema for the model be "TLDR": string type as a summary, "Original": String with the models output."
+   - `prompt` and the response metadata are added by the program, not the model (the model can't know the metadata while it's writing).
+2. **Always or optional?** "JSON is always passed to the model now to build a use case of saving the typed output to a DB for persistence story."
+3. **Streaming and JSON:** "In the terminal, stream the output as before. I don't think the response JSON has a streaming concept, so output typed schema has to wait for the full model response, otherwise the JSON attributes will have to keep on updating."
+4. **Using the result:** "For now, just print the JSON in a prettify way."
+
+### How I think it works
+- **Does the output always match the schema?** "My guesses are that the model has some output schema field and will try to fit the output response in the format the caller specifies. I don't think it can return JSON that doesn't match. I think this part is deterministic."
+- **Token cost:** "I think JSON output will cost more tokens as there is additional work needed to be done by the model."
+- **Thinking:** "Yes, thinking still happens with JSON output for the model to answer harder questions."
+
 ## Done when
 - [ ] Step 1: one quoted prompt in; the answer printed, then the response metadata, tokens used, approximate cost, and latency.
 - [ ] Optional effort flag works.

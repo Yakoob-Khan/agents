@@ -19,6 +19,14 @@ Each entry: **what it is** (one or two sentences) · **what I saw when I built i
 
 What I saw: with `MAX_TOKENS = 50`, the answer was cut off at exactly 50 output tokens and `stop_reason` was `max_tokens`. ([L1](../labs/01-messages/DESIGN.md))
 
+**Streaming.** Streaming events improves UX: the answer shows up while the model is still generating, instead of after the whole response is done. It doesn't change the total time or the cost.
+
+What I saw: the simple question showed its first answer text at 0.92s instead of waiting the full 5.05s. ([L1](../labs/01-messages/DESIGN.md))
+
+**Blocks and deltas.** There are different kinds of blocks in a response: thinking, text. Each block has deltas: a delta is one event carrying the next piece of that block.
+
+What I saw: the hard question streamed 2 blocks (thinking, then text) as 466 `content_block_delta` events, wrapped in `content_block_start` / `content_block_stop` for each block. ([L1](../labs/01-messages/DESIGN.md))
+
 ### Thinking & effort
 > _adaptive thinking; what effort trades off_
 

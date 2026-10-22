@@ -1,4 +1,5 @@
-"""Lab 01: stream one prompt's answer from Claude, then print the response metadata.
+"""Lab 01: stream one prompt's answer from Claude as structured JSON, then print a record of
+the prompt, the parsed answer, and the response metadata.
 
 Usage:
     uv run --env-file ../../.env main.py "What is a context window?"
@@ -6,6 +7,7 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import sys
 import time
@@ -22,6 +24,7 @@ from anthropic.types import (
     ThinkingConfigAdaptiveParam,
     Usage,
 )
+from pydantic import BaseModel, Field
 
 MODEL = "claude-sonnet-5-5"
 
@@ -59,9 +62,24 @@ DIM = "\033[2m"  # terminal code: faint text, used for the thinking summary
 RESET = "\033[0m"  # terminal code: back to normal text
 
 
+# The shape the model's output must match (structured output). The SDK turns this class into
+# a JSON schema and sends it in the request as output_config.format:
+#     {"type": "json_schema", "schema": {"type": "object",
+#      "properties": {"TLDR": {"type": "string", "description": ...}, "Original": {...}},
+#      "required": ["TLDR", "Original"], "additionalProperties": false, ...}}
+# The docstring and field descriptions go into that schema, so the model reads them: they're
+# written for the model, not for developers.
+class Answer(BaseModel):
+    """An answer to the user's question."""
+
+    TLDR: str = Field(description="A short summary of the answer")
+    Original: str = Field(description="The full answer")
+
+
 @dataclass
 class StreamResult:
     message: Message  # the full response, assembled by the SDK from the events
+    answer: Answer | None  # the model's JSON, parsed and validated; None if it didn't finish
     request_id: str | None  # from the HTTP response headers; a streamed message lacks it
     first_thinking_seconds: float | None  # time to first thinking summary text; None if none
     first_text_seconds: float | None  # time to first answer text; None if none arrived
@@ -111,6 +129,7 @@ def stream_answer(client: anthropic.Anthropic, prompt: str, effort: Effort | Non
         messages=messages,
         output_config=output_config,
         thinking=thinking,
+        output_format=Answer,  # the model's text must be JSON matching Answer's schema
     ) as stream:
         for event in stream:
             if event.type in API_EVENT_TYPES:
@@ -126,7 +145,9 @@ def stream_answer(client: anthropic.Anthropic, prompt: str, effort: Effort | Non
                     print(f"{CLEAR_LINE}{DIM}[thinking summary]\n", end="")
                 print(event.delta.thinking, end="", flush=True)
 
-            # Answer text arrives in pieces ("text_delta"s) inside a text block.
+            # Answer text arrives in pieces ("text_delta"s) inside a text block. With
+            # structured output, that text is the JSON itself, arriving a few tokens at a time:
+            # it isn't valid JSON until the last piece.
             elif event.delta.type == "text_delta":
                 if first_text_seconds is None:
                     first_text_seconds = time.perf_counter() - start
@@ -140,6 +161,9 @@ def stream_answer(client: anthropic.Anthropic, prompt: str, effort: Effort | Non
         # same object the non-streaming call returned, with the final usage and stop_reason.
         message = stream.get_final_message()
         request_id = stream.request_id
+        # Once the JSON is complete, the SDK parses it into an Answer. It's None when the
+        # JSON never finished (e.g. stop_reason "max_tokens" or "refusal").
+        answer = message.parsed_output
 
     total_seconds = time.perf_counter() - start
     if first_text_seconds is not None:
@@ -151,6 +175,7 @@ def stream_answer(client: anthropic.Anthropic, prompt: str, effort: Effort | Non
 
     return StreamResult(
         message,
+        answer,
         request_id,
         first_thinking_seconds,
         first_text_seconds,
@@ -203,6 +228,29 @@ def print_metadata(result: StreamResult, effort: Effort | None) -> None:
     print(f"total latency:     {result.total_seconds:.2f}s")
 
 
+def build_record(prompt: str, result: StreamResult, effort: Effort | None) -> dict[str, object]:
+    # One record per query, shaped for saving to a database. The model wrote only "output";
+    # the program adds the prompt and the metadata, which the model can't know.
+    response = result.message
+    return {
+        "prompt": prompt,
+        "output": result.answer.model_dump() if result.answer else None,
+        "metadata": {
+            "id": response.id,
+            "request_id": result.request_id,
+            "model": response.model,
+            "stop_reason": response.stop_reason,
+            "effort": effort or DEFAULT_EFFORT,
+            "usage": response.usage.model_dump(exclude_none=True),
+            "approx_cost_usd": round(estimate_cost(response.usage), 6),
+            "first_answer_text_seconds": (
+                round(result.first_text_seconds, 2) if result.first_text_seconds else None
+            ),
+            "total_seconds": round(result.total_seconds, 2),
+        },
+    }
+
+
 def fail(message: str) -> int:
     print(f"{RESET}{CLEAR_LINE}", end="", flush=True)  # normal text; erase "Thinking..."
     print(message, file=sys.stderr)
@@ -229,6 +277,9 @@ def main() -> int:
         return fail("Could not reach the API. Check your network connection.")
 
     print_metadata(result, effort)
+
+    print("\n--- record (prompt + model's JSON + metadata) ---")
+    print(json.dumps(build_record(args.prompt, result, effort), indent=2))
     return 0
 
 

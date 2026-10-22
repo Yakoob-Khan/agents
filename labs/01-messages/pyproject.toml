@@ -1,9 +1,12 @@
 [project]
 name = "lab-01-messages"
 version = "0.1.0"
-description = "Lab 01: send one prompt to Claude and inspect the response"
+description = "Lab 01: send one prompt to Claude and inspect the streamed, structured response"
 requires-python = ">=3.12"
-dependencies = ["anthropic"]
+dependencies = [
+    "anthropic",
+    "pydantic>=2.14.1",
+]
 
 [dependency-groups]
 dev = ["mypy", "pytest", "ruff"]
