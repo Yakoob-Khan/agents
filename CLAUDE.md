@@ -13,7 +13,7 @@ The user builds first and reads later. Don't front-load documentation; point to 
 Follow the loop in `docs/WORKFLOW.md`. In short:
 
 1. **Design is the user's.** The user drafts `docs/designs/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`). Don't write the design for them; ask questions, offer options.
-2. **Debate before code.** Challenge the design: alternatives, tradeoffs, where it diverges from current best practice or from how production agent platforms do it. Give a recommendation, not a survey. Record settled cross-cutting tradeoffs in `docs/DECISIONS.md`.
+2. **Scope check before code, critique at the retro.** Before building, check only that the design covers the milestone's scope in `docs/PLAN.md` (Build, Concepts, Break it) and that its facts are correct (API behavior, model defaults, prices). Don't critique whether it's the optimal design. After it's built and working, when the user asks for a retro, point out the design holes for that scope; implement a refinement only when the user asks, so they can compare it with what they built. Record settled cross-cutting tradeoffs in `docs/DECISIONS.md`.
 3. **No implementation until the user approves the design.** Then implement in small, reviewable steps — one concept per step. Through Phase 2, stop after each step for review. From M4 on, run the eval suite at the end of each milestone.
 4. **Teach while building.** Explain the *why* of each step. After a step, point to the specific lines that carry the concept.
 5. **Suggest a "break it" experiment** for each concept so the user sees the failure mode.
@@ -67,7 +67,7 @@ When something in these docs has gone stale, say so and propose the fix.
 
 **Backend — Python** (labs, `packages/core`, `apps/cli`, `apps/server`, `evals/`, `infra/`):
 
-- Type hints everywhere, checked in strict mode (checker chosen in the lab 01 design)
+- Type hints everywhere, checked with mypy in strict mode; Ruff for lint and format; `uv` for dependencies; pytest for tests (D12)
 - Pydantic models for anything crossing a boundary (event protocol, API bodies, tool inputs)
 - `asyncio` for the loop and server; FastAPI for the server
 - Use the `anthropic` SDK's own types for messages and content blocks; don't redefine them

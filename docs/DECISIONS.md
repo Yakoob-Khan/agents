@@ -112,3 +112,14 @@
 - **Why:** Python is where most agent tooling, examples, and production agent backends live. The CLI must be Python because it runs core in-process through Phase 3 (D7). The web client stays TypeScript because it runs in a browser. The cross-language boundary also makes the event protocol a real contract.
 - **Tradeoff:** Two languages in one repo, and the protocol needs schema generation (D6). Python needs a type checker in strict mode to get the safety TypeScript gives by default.
 - **Revisit when:** —
+
+---
+
+## D12 — Python tooling: uv, Ruff, mypy, pytest on Python 3.12
+
+- **Status:** Accepted (lab 01 design). Carries forward to every Python package in the repo.
+- **Context:** The backend is Python (D11) and needs a package manager, linter/formatter, type checker, and test runner.
+- **Decision:** Python 3.12; `uv` for dependencies, virtual environments, and Python versions; Ruff for linting and formatting; mypy in strict mode for type checking; pytest for tests.
+- **Why:** The most common industry combination. `uv` and Ruff are the current standards (both from Astral); mypy is the most widely used checker in industry codebases and CI; pytest is the standard test runner.
+- **Tradeoff:** pyright would match the errors shown in Cursor's editor; newer checkers (ty, Pyrefly) are faster but less established. Python 3.14 is the current stable release; 3.12 is still supported.
+- **Revisit when:** A dependency needs a newer Python, or mypy gets in the way of learning.

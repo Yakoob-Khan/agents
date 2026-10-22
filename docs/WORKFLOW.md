@@ -14,9 +14,9 @@ Ask Claude: *"Kick off M05"* (or *"lab 01"*). One paragraph back: what I'm build
 ### 2. Design (me, 20–40 min)
 Copy [`designs/DESIGN.md`](designs/DESIGN.md) to `docs/designs/MNN-name.md` (labs: `labs/NN-name/DESIGN.md`) and fill it in. Rough is fine — gaps are what the debate is for. Write down my *guesses* about how things work; being wrong here is where the learning comes from.
 
-### 3. Debate (with Claude)
-Prompt: *"Review my design. Challenge it: alternatives, tradeoffs, how real agent platforms do it."*
-- Claude recommends; I decide.
+### 3. Scope check (with Claude)
+Prompt: *"Does my design cover the scope?"*
+- Claude checks only that the design meets the milestone's scope in `PLAN.md` and that its facts are right. No critique of whether it's optimal; that waits for the retro.
 - Cross-cutting tradeoffs → `docs/DECISIONS.md`; milestone-only ones stay in the design doc.
 - I say "approved" before any code is written.
 
@@ -37,7 +37,7 @@ The milestone's *Read after* list. Now the essays describe something I've alread
 ### 8. Capture
 - Prompt: *"Add what I learned to LEARNING.md"* — then dictate it in my words.
 - Answer the *Explain it* questions out loud or in writing. Ask Claude to poke holes.
-- Retro: a few lines at the bottom of the design doc — what surprised me, what I'd change.
+- Retro: a few lines at the bottom of the design doc — what surprised me, what I'd change. Prompt: *"What design holes exist for this scope?"* If I want to try a better design, I ask Claude to implement the refinement so I can compare it with what I built.
 - Run the eval suite (from M4 onward) to check nothing regressed.
 - Tick the box in `PLAN.md`; move *Current step*.
 - Prompt: *"Mark MNN done on the roadmap"* — Claude adds it to `DONE` in [`roadmap.html`](roadmap.html).
@@ -62,7 +62,8 @@ If something surprises me at any level, I drop back to reading every line of tha
 ## Prompts I'll reuse
 
 - *"Kick off M05."*
-- *"Review my design. Challenge it."*
+- *"Does my design cover the scope?"*
+- *"What design holes exist for this scope?"* (retro, after it works)
 - *"Approved — implement step 1."*
 - *"Show me the lines that carry the concept."*
 - *"Give me a break-it experiment for this."*

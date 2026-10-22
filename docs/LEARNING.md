@@ -13,8 +13,18 @@ Each entry: **what it is** (one or two sentences) · **what I saw when I built i
 ### The Messages API
 > _what's in a request, stop reasons, tokens, streaming_
 
+**Stop reasons.** The API response has a `stop_reason` that tells why the model stopped generating text.
+- `end_turn`: the model decided to stop for itself.
+- `max_tokens`: specifying max tokens cuts off the output.
+
+What I saw: with `MAX_TOKENS = 50`, the answer was cut off at exactly 50 output tokens and `stop_reason` was `max_tokens`. ([L1](../labs/01-messages/DESIGN.md))
+
 ### Thinking & effort
 > _adaptive thinking; what effort trades off_
+
+**Thinking tokens.** There are thinking tokens besides the answer: the model's reasoning before it writes the answer. They count inside `output_tokens` (reported separately in `output_tokens_details.thinking_tokens`).
+
+What I saw: a simple question used 0 thinking tokens; a harder question used 719 thinking tokens out of 2,485 output tokens. ([L1](../labs/01-messages/DESIGN.md))
 
 ### The agent loop & tool use
 > _(fill after L2)_
@@ -96,3 +106,5 @@ Each entry: **what it is** (one or two sentences) · **what I saw when I built i
 
 ## Gotchas & insights
 > _Running log of things I hit in practice, especially from "break it" experiments._
+
+- **L1 — no output text was even produced.** With `MAX_TOKENS = 50` on a question that needed thinking, all 50 tokens went to thinking (`content blocks: ['thinking']`, `stop_reason: max_tokens`), so there was no answer at all.

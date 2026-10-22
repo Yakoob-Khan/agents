@@ -1,0 +1,18 @@
+[project]
+name = "lab-01-messages"
+version = "0.1.0"
+description = "Lab 01: send one prompt to Claude and inspect the response"
+requires-python = ">=3.12"
+dependencies = ["anthropic"]
+
+[dependency-groups]
+dev = ["mypy", "pytest", "ruff"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+strict = true
