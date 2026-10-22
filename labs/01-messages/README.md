@@ -1,6 +1,6 @@
 # Lab 01 — Messages
 
-Send one prompt to Claude (Sonnet 5.5), print the answer, then the response metadata, approximate cost, and latency. Design: [`DESIGN.md`](DESIGN.md).
+Send one prompt to Claude (Sonnet 5.5) and stream the answer as it's written, then print the response metadata, the stream events received, approximate cost, time to first answer text, and total latency. Design: [`DESIGN.md`](DESIGN.md).
 
 ## One-time setup
 
