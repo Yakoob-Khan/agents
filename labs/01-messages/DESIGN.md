@@ -1,6 +1,6 @@
 # L1 — Messages: design
 
-> Status: draft (scope checked; awaiting approval)
+> Status: done
 
 ## Goal
 A command line program that sends one prompt to Claude and prints the answer, followed by the response metadata, so I can see what a model API request and response look like.
@@ -84,11 +84,12 @@ user (prompt as CLI argument) → script → Claude API → response → script 
 - **Thinking:** "Yes, thinking still happens with JSON output for the model to answer harder questions."
 
 ## Done when
-- [ ] Step 1: one quoted prompt in; the answer printed, then the response metadata, tokens used, approximate cost, and latency.
-- [ ] Optional effort flag works.
-- [ ] Step 2: the answer streams.
-- [ ] Step 3: structured JSON output.
-- [ ] Break-it experiments run: low vs high effort; a tiny `max_tokens`.
+- [x] Step 1: one quoted prompt in; the answer printed, then the response metadata, tokens used, approximate cost, and latency.
+- [x] Optional effort flag works.
+- [x] Step 2: the answer streams.
+- [x] Step 3: structured JSON output.
+- [x] Break-it: a tiny `max_tokens`; Ctrl-C mid-stream.
+- [ ] Break-it: low vs high effort (skipped).
 
 ## Retro
 After building: what surprised me, what I'd change.
