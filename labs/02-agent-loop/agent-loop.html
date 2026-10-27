@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Agent Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow reading column; each section is one picture with a one-line caption. */
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --fg: #18202c;
+  --muted: #5d6879;
+  --line: #d9dfe8;
+  --loop: #2b59c3;      /* your code */
+  --loop-soft: #e3eafa;
+  --model: #b86e00;     /* the model / API */
+  --model-soft: #fbeedb;
+  --tool: #1d7f55;      /* tools */
+  --tool-soft: #dff2e8;
+  --stop: #b93a2b;      /* leaving the loop */
+  --stop-soft: #f8e3df;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f131a; --surface: #171c25; --fg: #e6eaf1; --muted: #98a3b4; --line: #2a3240;
+    --loop: #7aa2ff; --loop-soft: #1c2741;
+    --model: #f0a940; --model-soft: #33270f;
+    --tool: #4fc48f; --tool-soft: #12301f;
+    --stop: #f07a68; --stop-soft: #3a1c18;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f131a; --surface: #171c25; --fg: #e6eaf1; --muted: #98a3b4; --line: #2a3240;
+  --loop: #7aa2ff; --loop-soft: #1c2741;
+  --model: #f0a940; --model-soft: #33270f;
+  --tool: #4fc48f; --tool-soft: #12301f;
+  --stop: #f07a68; --stop-soft: #3a1c18;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.55 var(--font-body);
+}
+main {
+  max-width: 860px; margin: 0 auto;
+  padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px;
+}
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.05; }
+h2 { font-size: 1.5rem; }
+p { margin: 0; max-width: 65ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+.eyebrow { font: 600 0.75rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 16px; }
+.lede { color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.9rem; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* 1. diagram */
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; overflow-x: auto; }
+.figure svg { display: block; width: 100%; min-width: 600px; height: auto; }
+svg text { font-family: var(--font-body); fill: var(--fg); }
+svg .t-mono { font-family: var(--font-mono); font-size: 12px; fill: var(--muted); }
+svg .t-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+svg .t-label { font-size: 13px; font-weight: 600; }
+.edge path { fill: none; stroke: var(--line); stroke-width: 2.5; transition: stroke 0.2s, stroke-width 0.2s; }
+.edge text { fill: var(--muted); transition: fill 0.2s; }
+.edge .badge circle { fill: var(--surface); stroke: var(--line); stroke-width: 2; transition: all 0.2s; }
+.edge .badge text { fill: var(--muted); font: 700 12px var(--font-mono); }
+.edge.on path { stroke: var(--c); stroke-width: 4; }
+.edge.on text { fill: var(--fg); }
+.edge.on .badge circle { fill: var(--c); stroke: var(--c); }
+.edge.on .badge text { fill: var(--surface); }
+.stepper { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.stepper button {
+  font: 600 0.85rem var(--font-mono); padding: 8px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+}
+.stepper button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.stepper button:focus-visible { outline: 3px solid var(--loop); outline-offset: 2px; }
+.caption { min-height: 3.2em; padding: 12px 14px; border-left: 4px solid var(--c, var(--line)); background: var(--surface); border-radius: 0 8px 8px 0; }
+
+/* 2. run timeline */
+.run { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.req { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.req header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.req h3 { margin: 0; font: 700 1.05rem var(--font-display); }
+.msg { border-radius: 6px; padding: 7px 9px; font-size: 0.82rem; line-height: 1.35; border: 1px solid transparent; }
+.msg b { font-family: var(--font-mono); font-weight: 600; font-size: 0.78rem; display: block; }
+.msg.user { background: var(--loop-soft); }
+.msg.asst { background: var(--model-soft); }
+.msg.res { background: var(--tool-soft); }
+.msg.new { border-color: var(--fg); }
+.msg.out { background: transparent; border: 1px dashed var(--model); }
+.bar { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--loop); border-radius: 5px; }
+.tok { font: 600 0.9rem var(--font-mono); font-variant-numeric: tabular-nums; }
+.sr { font: 600 0.72rem var(--font-mono); padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+.sr.go { background: var(--tool-soft); color: var(--tool); }
+.sr.end { background: var(--model-soft); color: var(--model); }
+.note { font-size: 0.9rem; color: var(--muted); }
+
+/* 3. id pairing */
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); gap: 10px 0; align-items: center; }
+.pair .col-h { font: 600 0.8rem var(--font-mono); color: var(--muted); }
+.blk { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: 0.82rem/1.45 var(--font-mono); min-width: 0; overflow-wrap: anywhere; }
+.blk .k { color: var(--muted); }
+.id { padding: 1px 5px; border-radius: 4px; font-weight: 600; }
+.id.a { background: var(--loop-soft); color: var(--loop); }
+.id.b { background: var(--tool-soft); color: var(--tool); }
+.arrow { text-align: center; font-size: 1.4rem; color: var(--muted); }
+.wrap-msg { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); font: 600 0.75rem var(--font-mono); color: var(--muted); }
+
+/* 4. stop reasons */
+.fork { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.out-card { border-radius: 10px; padding: 14px; display: grid; gap: 6px; align-content: start; border: 1px solid var(--line); background: var(--surface); }
+.out-card .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 600 0.78rem var(--font-mono); padding: 3px 8px; border-radius: 5px; }
+.out-card.again { border-top: 5px solid var(--tool); } .again .chip { background: var(--tool-soft); color: var(--tool); }
+.out-card.done { border-top: 5px solid var(--model); } .done .chip { background: var(--model-soft); color: var(--model); }
+.out-card.early { border-top: 5px solid var(--stop); } .early .chip { background: var(--stop-soft); color: var(--stop); }
+.out-card h3 { margin: 0; font: 700 1.05rem var(--font-display); }
+.out-card p { font-size: 0.88rem; color: var(--muted); }
+
+/* 5. who does what */
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.side { border-radius: 10px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.side.m { background: var(--model-soft); } .side.l { background: var(--loop-soft); }
+.side h3 { margin: 0; font: 700 1.1rem var(--font-display); }
+.side ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 0.92rem; }
+
+@media (max-width: 640px) {
+  .run, .split { grid-template-columns: minmax(0, 1fr); }
+  .pair, .wrap-msg { grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+
+<header style="display:grid; gap:10px">
+  <div class="eyebrow">Lab 02 · agent-loop</div>
+  <h1>The agent loop</h1>
+  <p class="lede">The model decides. Your loop does the work. The history only grows.</p>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--loop)"></i>your loop (<code>main.py</code>)</span>
+    <span><i class="dot" style="background:var(--model)"></i>the model (API)</span>
+    <span><i class="dot" style="background:var(--tool)"></i>tools (<code>tools.py</code>)</span>
+    <span><i class="dot" style="background:var(--stop)"></i>leaving the loop</span>
+  </div>
+</header>
+
+<!-- 1 -->
+<section>
+  <div class="eyebrow">1 · One turn of the loop</div>
+  <h2>Four moves, then repeat</h2>
+  <div class="figure">
+    <svg viewBox="0 0 760 405" role="img" aria-label="Agent loop: your loop sends a request to the model, gets a response, runs tools, appends results, and repeats until a stop reason other than tool_use.">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path>
+        </marker>
+      </defs>
+
+      <!-- nodes -->
+      <rect x="30" y="135" width="230" height="110" rx="10" fill="var(--loop-soft)" stroke="var(--loop)" stroke-width="2"></rect>
+      <text x="145" y="175" text-anchor="middle" class="t-title" style="fill:var(--loop)">Your loop</text>
+      <text x="145" y="197" text-anchor="middle" class="t-mono">main.py · run_agent()</text>
+      <text x="145" y="219" text-anchor="middle" class="t-mono">messages = [ … ]</text>
+
+      <rect x="500" y="30" width="230" height="100" rx="10" fill="var(--model-soft)" stroke="var(--model)" stroke-width="2"></rect>
+      <text x="615" y="72" text-anchor="middle" class="t-title" style="fill:var(--model)">The model</text>
+      <text x="615" y="94" text-anchor="middle" class="t-mono">claude-sonnet-5-5 · API</text>
+
+      <rect x="500" y="250" width="230" height="100" rx="10" fill="var(--tool-soft)" stroke="var(--tool)" stroke-width="2"></rect>
+      <text x="615" y="292" text-anchor="middle" class="t-title" style="fill:var(--tool)">Tools</text>
+      <text x="615" y="314" text-anchor="middle" class="t-mono">list_files · read_file · grep</text>
+
+      <!-- no link between model and tools -->
+      <line x1="615" y1="138" x2="615" y2="242" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 6"></line>
+      <rect x="560" y="176" width="110" height="26" rx="13" fill="var(--surface)" stroke="var(--line)"></rect>
+      <text x="615" y="193" text-anchor="middle" class="t-mono" style="font-size:11px">never touches</text>
+
+      <!-- 1 request -->
+      <g class="edge" data-step="1" style="--c:var(--loop)">
+        <path d="M200,135 C230,60 400,48 495,62" marker-end="url(#ah)"></path>
+        <g class="badge"><circle cx="300" cy="72" r="13"></circle><text x="300" y="76" text-anchor="middle">1</text></g>
+        <text x="240" y="32" class="t-label">request: tools + whole history</text>
+      </g>
+      <!-- 2 response -->
+      <g class="edge" data-step="2" style="--c:var(--model)">
+        <path d="M495,105 C420,120 320,140 265,165" marker-end="url(#ah)"></path>
+        <g class="badge"><circle cx="390" cy="125" r="13"></circle><text x="390" y="129" text-anchor="middle">2</text></g>
+        <text x="285" y="188" class="t-label">response: stop_reason + content</text>
+      </g>
+      <!-- 3 run tools -->
+      <g class="edge" data-step="3" style="--c:var(--tool)">
+        <path d="M265,215 C330,240 420,270 495,285" marker-end="url(#ah)"></path>
+        <g class="badge"><circle cx="390" cy="257" r="13"></circle><text x="390" y="261" text-anchor="middle">3</text></g>
+        <text x="280" y="288" class="t-label">run each tool_use</text>
+      </g>
+      <!-- 4 results -->
+      <g class="edge" data-step="4" style="--c:var(--tool)">
+        <path d="M495,330 C400,345 230,345 175,250" marker-end="url(#ah)"></path>
+        <g class="badge"><circle cx="300" cy="333" r="13"></circle><text x="300" y="337" text-anchor="middle">4</text></g>
+        <text x="322" y="366" class="t-label">all results → ONE user message, appended</text>
+      </g>
+      <!-- exit -->
+      <g class="edge" data-step="5" style="--c:var(--stop)">
+        <path d="M60,245 L60,372" marker-end="url(#ah)"></path>
+        <g class="badge"><circle cx="60" cy="305" r="13"></circle><text x="60" y="309" text-anchor="middle">✕</text></g>
+        <text x="76" y="396" class="t-label">stop_reason ≠ tool_use → report()</text>
+      </g>
+    </svg>
+  </div>
+  <div class="stepper" role="group" aria-label="Walk through the loop">
+    <button type="button" id="s1" data-go="1" aria-pressed="true">1 send</button>
+    <button type="button" id="s2" data-go="2" aria-pressed="false">2 decide</button>
+    <button type="button" id="s3" data-go="3" aria-pressed="false">3 run tools</button>
+    <button type="button" id="s4" data-go="4" aria-pressed="false">4 append</button>
+    <button type="button" id="s5" data-go="5" aria-pressed="false">✕ stop</button>
+    <button type="button" id="play" aria-pressed="false">▶ play</button>
+  </div>
+  <div class="caption" id="cap" aria-live="polite"></div>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="eyebrow">2 · Your real run · 3 requests · $0.035</div>
+  <h2>Every request resends everything</h2>
+  <p class="note">Outlined = added since the last request. Bars are input tokens, to scale.</p>
+  <div class="run">
+    <article class="req">
+      <header><h3>Request 1</h3><span class="sr go">tool_use</span></header>
+      <div class="msg user new"><b>[0] user</b>question</div>
+      <div class="msg out"><b>→ model asked for</b>list_files(".") + grep("(?i)cost")</div>
+      <div class="bar"><i style="width:11.7%"></i></div>
+      <div class="tok">763 in</div>
+      <p class="note">Mostly the 3 tool definitions.</p>
+    </article>
+    <article class="req">
+      <header><h3>Request 2</h3><span class="sr go">tool_use</span></header>
+      <div class="msg user"><b>[0] user</b>question</div>
+      <div class="msg asst new"><b>[1] assistant</b>2 × tool_use</div>
+      <div class="msg res new"><b>[2] user</b>2 × tool_result</div>
+      <div class="msg out"><b>→ model asked for</b>read_file("main.py") + read_file("test_main.py")</div>
+      <div class="bar"><i style="width:26.9%"></i></div>
+      <div class="tok">1,760 in</div>
+    </article>
+    <article class="req">
+      <header><h3>Request 3</h3><span class="sr end">end_turn</span></header>
+      <div class="msg user"><b>[0] user</b>question</div>
+      <div class="msg asst"><b>[1] assistant</b>2 × tool_use</div>
+      <div class="msg res"><b>[2] user</b>2 × tool_result</div>
+      <div class="msg asst new"><b>[3] assistant</b>2 × tool_use</div>
+      <div class="msg res new"><b>[4] user</b>2 files' full text</div>
+      <div class="msg out"><b>→ model wrote</b>thinking + the answer</div>
+      <div class="bar"><i style="width:100%"></i></div>
+      <div class="tok">6,536 in</div>
+    </article>
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="eyebrow">3 · Inside one step (your request 1)</div>
+  <h2>Calls and results pair up by id</h2>
+  <div class="pair">
+    <div class="col-h">messages[1] · assistant</div><div></div><div class="col-h">messages[2] · user (one message)</div>
+    <div class="blk"><span class="k">type</span> tool_use<br><span class="k">id</span> <span class="id a">toolu_01Tez…</span><br><span class="k">name</span> list_files<br><span class="k">input</span> {"directory": "."}</div>
+    <div class="arrow">→</div>
+    <div class="blk"><span class="k">type</span> tool_result<br><span class="k">tool_use_id</span> <span class="id a">toolu_01Tez…</span><br><span class="k">content</span> "DESIGN.md (97 lines…"</div>
+    <div class="blk"><span class="k">type</span> tool_use<br><span class="k">id</span> <span class="id b">toolu_0182f…</span><br><span class="k">name</span> grep<br><span class="k">input</span> {"pattern": "(?i)cost"}</div>
+    <div class="arrow">→</div>
+    <div class="blk"><span class="k">type</span> tool_result<br><span class="k">tool_use_id</span> <span class="id b">toolu_0182f…</span><br><span class="k">content</span> "DESIGN.md:12: …"</div>
+  </div>
+  <p class="note">Two calls in one response = parallel tool use. Both results go back together. A failed tool still returns a result, with <code>"is_error": true</code>.</p>
+</section>
+
+<!-- 4 -->
+<section>
+  <div class="eyebrow">4 · After every response</div>
+  <h2>Check <code>stop_reason</code> first</h2>
+  <div class="fork">
+    <div class="out-card again">
+      <div class="chips"><span class="chip">tool_use</span></div>
+      <h3>Loop again</h3>
+      <p>Run the tools, append the results, send.</p>
+    </div>
+    <div class="out-card done">
+      <div class="chips"><span class="chip">end_turn</span></div>
+      <h3>Answer</h3>
+      <p>Print the final text. Exit 0.</p>
+    </div>
+    <div class="out-card early">
+      <div class="chips"><span class="chip">max_tokens</span><span class="chip">refusal</span><span class="chip">pause_turn</span><span class="chip">MAX_STEPS</span></div>
+      <h3>Print what we have</h3>
+      <p>Never run tools from a cut-off or refused turn. Exit 1.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section>
+  <div class="eyebrow">5 · Who does what</div>
+  <h2>The model asks. The loop acts.</h2>
+  <div class="split">
+    <div class="side m">
+      <h3 style="color:var(--model)">The model</h3>
+      <ul>
+        <li>Reads tool names + descriptions + schemas</li>
+        <li>Chooses tools and inputs</li>
+        <li>Decides when it's done</li>
+        <li>Remembers nothing between requests</li>
+      </ul>
+    </div>
+    <div class="side l">
+      <h3 style="color:var(--loop)">Your loop</h3>
+      <ul>
+        <li>Holds the history and resends it</li>
+        <li>Runs the tools, inside <code>labs/01-messages/</code></li>
+        <li>Turns errors into results</li>
+        <li>Enforces the step cap</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+<script>
+  const captions = {
+    1: ["var(--loop)", "Your loop sends the tool definitions and the whole messages list. The API keeps no memory, so everything goes every time."],
+    2: ["var(--model)", "The model replies. stop_reason says what it wants: \"tool_use\" means run these tools. The response content is appended to messages whole."],
+    3: ["var(--tool)", "Your loop runs every tool_use block in the response. The model never runs anything; it only asked."],
+    4: ["var(--tool)", "All tool_result blocks go into one user message, each naming its tool_use_id. Appended, then back to step 1."],
+    5: ["var(--stop)", "Any stop_reason other than tool_use, or hitting MAX_STEPS, ends the loop. report() prints what we have."]
+  };
+  const edges = document.querySelectorAll(".edge");
+  const buttons = document.querySelectorAll("[data-go]");
+  const cap = document.getElementById("cap");
+  const play = document.getElementById("play");
+  let timer = null;
+
+  function show(step) {
+    edges.forEach(e => e.classList.toggle("on", e.dataset.step === String(step)));
+    buttons.forEach(b => b.setAttribute("aria-pressed", b.dataset.go === String(step)));
+    cap.style.setProperty("--c", captions[step][0]);
+    cap.textContent = captions[step][1];
+  }
+  function stop() { clearInterval(timer); timer = null; play.textContent = "▶ play"; play.setAttribute("aria-pressed", "false"); }
+
+  buttons.forEach(b => b.addEventListener("click", () => { stop(); show(Number(b.dataset.go)); }));
+  play.addEventListener("click", () => {
+    if (timer) return stop();
+    // Plays the real run: three passes through 1-4, then the exit.
+    const seq = [1,2,3,4, 1,2,3,4, 1,2,5];
+    let i = 0;
+    play.textContent = "■ stop"; play.setAttribute("aria-pressed", "true");
+    show(seq[i]);
+    timer = setInterval(() => {
+      i += 1;
+      if (i >= seq.length) return stop();
+      show(seq[i]);
+    }, 1600);
+  });
+  show(1);
+</script>
+</body>
+</html>

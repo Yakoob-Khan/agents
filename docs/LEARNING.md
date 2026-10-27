@@ -35,8 +35,20 @@ What I saw: the hard question streamed 2 blocks (thinking, then text) as 466 `co
 What I saw: a simple question used 0 thinking tokens; a harder question used 719 thinking tokens out of 2,485 output tokens. ([L1](../labs/01-messages/DESIGN.md))
 
 ### The agent loop & tool use
-> _(fill after L2)_
+> _the loop, tool definitions, tool_use / tool_result_
 
+**The agent loop.** "The agent loop sends the list of tools names and description, the model makes tool use responses if it wants to use the list of available tools to answer the question, the agent loop executes the respective tool, adds the tool result to the input for the next time the LLM request is made, iteratively until the model issues an end turn and is satified that it has answered the user's question."
+
+What I saw: asking "How is cost calculated in implementation and whether it is tested well?" took 3 requests ($0.035). Request 1 → `list_files` + `grep`, request 2 → `read_file` × 2 (`main.py`, `test_main.py`), request 3 → `end_turn` with the answer. Input tokens grew 763 → 1,760 → 6,536. ([L2](../labs/02-agent-loop/DESIGN.md) · visual: [`agent-loop.html`](../labs/02-agent-loop/agent-loop.html))
+
+**Terms I missed in my summary:**
+- **`input_schema`:** each tool definition is `name` + `description` + `input_schema` (JSON Schema for its inputs). `strict: true` guarantees the model's inputs match the schema.
+- **The whole history is sent every time:** every request resends every earlier message, not just the latest result. That's why input tokens grow each step.
+- **Two messages appended per step:** first the model's response (its `tool_use` blocks, appended whole), then a user message with the `tool_result` blocks.
+- **`tool_use_id`:** each `tool_use` block has an `id`; its `tool_result` carries the same value as `tool_use_id`. That's how the model knows which result answers which call.
+- **Parallel tool calls:** one response can hold several `tool_use` blocks. All their results go back together in one user message.
+- **`is_error`:** a failed tool still returns a `tool_result`, with the error as its content and `is_error: true`, so the model can try something else.
+- **The loop can also end it:** besides `end_turn`, the loop stops on a step cap (`MAX_STEPS`), `max_tokens`, or `refusal`, and prints what it has. It never runs tools from a cut-off or refused turn.
 ### Workflows vs agents
 > _prompt chaining · routing · parallelization · orchestrator–workers · evaluator–optimizer_
 
