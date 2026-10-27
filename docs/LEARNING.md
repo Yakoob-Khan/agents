@@ -49,6 +49,24 @@ What I saw: asking "How is cost calculated in implementation and whether it is t
 - **Parallel tool calls:** one response can hold several `tool_use` blocks. All their results go back together in one user message.
 - **`is_error`:** a failed tool still returns a `tool_result`, with the error as its content and `is_error: true`, so the model can try something else.
 - **The loop can also end it:** besides `end_turn`, the loop stops on a step cap (`MAX_STEPS`), `max_tokens`, or `refusal`, and prints what it has. It never runs tools from a cut-off or refused turn.
+
+**The agent loop, in one paragraph (end of L2).** "Agent loop is about providing a list of tools to the LLM with each LLM request, letting the model pick tools to call, the agent executes the tool, appends the tool result to the growing conversation history, model doesn't hold agents conversation state, and model decides end_turn when it answers the question, or max cap is reached. tool caps prevent context from being overloaded with too much info."
+
+Notes:
+- The model only ends a run with `end_turn`. The max cap (`MAX_STEPS`), `max_tokens` and `refusal` are the loop stopping it from outside.
+- Two different caps: the step cap limits how many requests (and roughly the cost); a tool result size cap limits how much one result adds to the context. L2 has only the step cap; the files were small enough not to need the other (retro hole, comes back in M2).
+
+**Impossible questions.** "I learned that models are clever enough that impossible queries that can't be answered within the knowledge scope is answered as not enough information."
+
+What I saw: "What is the database schema?" with `MAX_STEPS` raised to 30. The model grepped for `CREATE TABLE` / `sqlite` / `sqlalchemy`, found nothing, read 3 files to confirm, and answered "There is no database schema in this project" after 3 requests ($0.029). It still used tokens to find out: it couldn't know there was nothing until it searched. This worked because 4 small files can be fully checked; an open-ended question ("find the bug") is where an agent might keep searching, so the step cap stays. ([L2](../labs/02-agent-loop/DESIGN.md))
+
+**Scoped tools.** "good tool implementations scopes the access permitted, raising tool errors if unauthorized access is attempted."
+
+What I saw: asked to read `../../.env`, the model tried `read_file("../../.env")`; its thinking said "the tool itself should enforce any restriction." `source_file()` in `tools.py` resolved the path, refused it before opening anything, and the error went back as a `tool_result` with `is_error: true`. The model read the error, listed the four allowed files back, and ended with `end_turn` (2 requests, $0.008). The key never reached the model. ([L2](../labs/02-agent-loop/DESIGN.md))
+
+**Tool names and descriptions.** "tool naming and description can matter, tho my experiment 3 didn't demonstrate that."
+
+What I saw: changing `grep`'s description to "search stuff" gave the same path and cost as the first run (3 requests, $0.036 vs $0.035). One small change: without "regular expression (Python re syntax)" the model sent `"cost"` instead of `"(?i)cost"`. The shorter definition saved 89 input tokens on every request. The name `grep` probably carried the meaning on its own. ([L2](../labs/02-agent-loop/DESIGN.md))
 ### Workflows vs agents
 > _prompt chaining · routing · parallelization · orchestrator–workers · evaluator–optimizer_
 

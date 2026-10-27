@@ -1,6 +1,6 @@
 # L2 — Agent loop: design
 
-> Status: draft
+> Status: done
 
 ## Goal
 A hand-written agent loop that gives the model read-only tools over the lab 01 source code and lets it explore until it can answer a question, so I can see how tool use and the loop work.
@@ -78,8 +78,12 @@ Where my guesses above were wrong, and what's actually true:
 - [ ] Each iteration prints what was added to the history, the tool calls and the tool results.
 - [ ] A path outside `labs/01-messages/` comes back as an error result, not a crash.
 - [ ] Hitting the cap, `max_tokens` or `refusal` prints what we have.
-- [ ] Break-it experiments run: vague tool description; tool returns an error; parallel results split across two messages; no iteration cap + impossible task.
+- [ ] Break-it experiments run, chosen because each sets up a later concept:
+  - [x] Impossible task, no cap → an agent's cost and length aren't known up front (L3 workflows vs agents, M8 budgets).
+  - [x] Tool returns an error → a refusal is just a tool result the model adapts to (M2 permissions, M1 tool failures).
+  - [x] Vague tool description → the description is a prompt that shapes behaviour and cost (M2 tools, M5 tool search, M4 evals).
 - Skipped: the 50k-token tool result (token cost). Instead, watch input tokens grow each step in normal runs: the whole history is resent on every request.
+- Skipped: parallel results split across two messages, `MAX_STEPS = 1`, tiny `max_tokens` (no new concept for later milestones).
 
 ## Retro
 After building: what surprised me, what I'd change.

@@ -9,7 +9,7 @@
 
 ## Current step
 
-👉 **Lab 02 — kickoff.** Prompt: *"Kick off lab 02."* Then copy `docs/designs/DESIGN.md` to `labs/02-agent-loop/DESIGN.md` and draft it.
+👉 **Lab 03 — kickoff.** Prompt: *"Kick off lab 03."* Then copy `docs/designs/DESIGN.md` to `labs/03-workflows/DESIGN.md` and draft it.
 
 Setup decided in lab 01 and carried forward: Python 3.12, `uv`, Ruff, mypy (strict), pytest (D12); API key from the git-ignored `.env` at the repo root.
 
@@ -21,7 +21,7 @@ Setup decided in lab 01 and carried forward: Python 3.12, `uv`, Ruff, mypy (stri
 |---|---|---|---|---|
 | | | **Phase 1 — Labs** (`labs/`, standalone) | | |
 | [x] | L1 | `messages` | Messages API, tokens, streaming, thinking/effort, structured output | Every line |
-| [ ] | L2 | `agent-loop` | The loop and tool use, by hand | Every line |
+| [x] | L2 | `agent-loop` | The loop and tool use, by hand | Every line |
 | [ ] | L3 | `workflows` | Workflows vs agents, the five patterns | Every line |
 | | | **Phase 2 — The harness** (`packages/core` + local CLI) | | |
 | [ ] | M1 | Harness + local coding CLI | Loop as a library, event stream, cancellation | Every line |
